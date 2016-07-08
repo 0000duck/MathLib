@@ -6,6 +6,7 @@ using System.Text;
 namespace MathLib
 {
     public delegate double Dfunction(double x);  // делегат, ссылающийся на определенную функцию
+    public delegate double Dfunction2(double x, double y);
 
     public class Dot  // тип, характеризующий координаты точки на плоскости
     {
@@ -20,26 +21,40 @@ namespace MathLib
 
     public class Function
     {
-        public Dfunction F { get; set; }   
+        public Dfunction F { get; set; }
+        public Dfunction2 F2 { get; set; }
+        Dot[] lagrangeDots;
+        public string IterationsHistory { get; set; }
 
-        public Function(params double[] koef)
+        public Function(Dot[] lagrangeDots)     //Конструктор, инициализирующий функцию по точкам с помощью полинома Лагранжа
+        {
+            this.lagrangeDots = lagrangeDots;
+            this.F = Polinom;
+        }
+
+        public Function(params double[] koef)   //Конструктор, инициализирующий функцию по коэффициентам уравнения степени N(зависит от количества коэффициентов);
         {
             this.F = delegate(double x){
-                double val = 0;
-                foreach(var k in koef)
+                double val = Math.Pow(x, koef.Length);
+                for(int i = 0; i < koef.Length; i++)
                 {
-                    val += k * x;
+                    val += koef[i] * Math.Pow(x, koef.Length - (i+1));
                 }
                 return val;
             };
         }
 
-        public Function(Dfunction FDelegate)
+        public Function(Dfunction FDelegate)    //Конструктор, инициализирующий функцию по делегату
         {
             this.F = FDelegate;
         }
 
-        public Function(string funcStr)
+        public Function(Dfunction2 FDelegate)
+        {
+            this.F2 = FDelegate;
+        }
+
+        public Function(string funcStr)         //Конструктор, инициализирующий функцию по строке (например x^2+x+5)
         {
             string fStr = "public static double FuncStruct(double x)" +
                             "{" +
@@ -48,7 +63,16 @@ namespace MathLib
             F = DelegateGenerator.CreateDelegate<Dfunction>("FuncStruct", fStr);
         }
 
-        public List<Dot> GetFunctionDots(double x1, double x2)   //функция для нахождения точек построения графика
+        public Function(string funcStr, int argsCnt)
+        {
+            string fStr = "public static double FuncStruct(double x, double y)" +
+                            "{" +
+                            "       return " + FuncStrParsing.ToSystemSyntax(funcStr) + ";" +
+                            "}";
+            F2 = DelegateGenerator.CreateDelegate<Dfunction2>("FuncStruct", fStr);
+        }
+
+        public List<Dot> GetFunctionDots(double x1, double x2)   //Метод для получения точек построения графика
         {
             List<Dot> dots = new List<Dot>();
             int Nsteps = 1000;
@@ -56,7 +80,7 @@ namespace MathLib
 
             for (int i = 0; i < Nsteps; i++)
             {
-                if (x != 0)
+                if (x != 0 && !double.IsInfinity(F(x)))
                 {
                     y = F(x);
                 }
@@ -70,7 +94,7 @@ namespace MathLib
         }
 
         // a, b - пределы хорды, eps - необходимая погрешность
-        public double FindRoot(double x1, double x2, double eps)
+        public double FindRoot_CHORD(double x1, double x2, double eps)      //Метод для получения корня функции на интервале с помощью метода хорд с заданной точностью
         {
             while (Math.Abs(x2 - x1) > eps)
             {
@@ -80,7 +104,54 @@ namespace MathLib
             return x2;
         }
 
-        public double Golden_section_method(double x1, double x2, double eps)
+        public double FindRoot_DICHOTOMY(double x1, double x2, double eps)      //Метод для получения корня функции на интервале с помощью метода дихотомии с заданной точностью
+        {
+            double x;
+            do {
+                x = (x1 + x2) / 2;
+                if (F(x) * F(x1) < 0)
+                    x2 = x;
+                else
+                    x1 = x;
+            } while (Math.Abs(x2 - x1) > eps && F(x) != 0);
+            return x;
+        }
+
+        public List<double> FindRoots_CHORD(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)    //Метод для получения всех корней функции на интервале с помощью метода хорд с заданной точностью
+        {
+            List<double> roots = new List<double>();
+            double step = (x2 - x1) / steps;
+            double val = 0;
+            x2 = x1 + step;
+            for (int i = 1; i <= steps; i++, x1+=step, x2+=step)
+            {
+                val = FindRoot_CHORD(x1, x2, eps);
+                if (F(x1)*F(x2) < 0)
+                {
+                    roots.Add(val);
+                }
+            }
+            return roots;
+        }
+
+        public List<double> FindRoots_DICHOTOMY(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)    //Метод для получения всех корней функции на интервале с помощью метода дихотомии с заданной точностью
+        {
+            List<double> roots = new List<double>();
+            double step = (x2 - x1) / steps;
+            double val = 0;
+            x2 = x1 + step;
+            for (int i = 1; i <= steps; i++, x1 += step, x2 += step)
+            {
+                val = FindRoot_DICHOTOMY(x1, x2, eps);
+                if (F(x1) * F(x2) < 0)
+                {
+                    roots.Add(val);
+                }
+            }
+            return roots;
+        }
+
+        public double Golden_section_method(double x1, double x2, double eps)       //Метод золотого сечения для нахождения экстремумов функции на промежутке с заданой точностью
         {
             //extr_iter_dots = new List<Dot>();
             double a, b;
@@ -111,7 +182,7 @@ namespace MathLib
             return (x1 + x2) / 2;
         }
 
-        public double Phibonacci_method(double x1, double x2, double eps)
+        public double Phibonacci_method(double x1, double x2, double eps)   //Метод Фибоначчи для нахождения экстремумов функции на промежутке с заданой точностью
         {
             int n = Convert.ToInt32((x2 - x1) / eps);
             double a, b, y1, y2;
@@ -155,25 +226,25 @@ namespace MathLib
             return Math.Min(a, b);
         }
 
-        public double Polinom(Dot [] lagrange_dots, double arg)
+        double Polinom(double arg)      //Метод для нахождения значения функции в точке с помощью полинома Лагранжа
         {
             double result = 0;
 
-            for (short i = 0; i < lagrange_dots.Length; i++)
+            for (short i = 0; i < lagrangeDots.Length; i++)
             {
                 double P = 1.0;
 
-                for (short j = 0; j < lagrange_dots.Length; j++)
+                for (short j = 0; j < lagrangeDots.Length; j++)
                     if (j != i)
-                        P *= (arg - lagrange_dots[j].X) / (lagrange_dots[i].X - lagrange_dots[j].Y);
+                        P *= (arg - lagrangeDots[j].X) / (lagrangeDots[i].X - lagrangeDots[j].X);
 
-                result += P * lagrange_dots[i].Y;
+                result += P * lagrangeDots[i].Y;
             }
 
             return result;
         }
 
-        public double GetIntegral_RECTANGLE(double a, double b, int n)
+        public double GetIntegral_RECTANGLE(double a, double b, int n)      //Нахождение определенного интеграла функции с помощью метода прямоугольников
         {
             double h, S, x, x0, x1;
             int i;
@@ -192,7 +263,7 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_RECTANGLE(double a, double b, int n, double eps)
+        public double GetIntegral_RECTANGLE(double a, double b, int n, double eps)      //Нахождение определенного интеграла функции с помощью метода прямоугольников с указанной точностью
         {
             int len = eps.ToString().Replace("0,",string.Empty).Length;
             double y1 = GetIntegral_RECTANGLE(a, b, n), y2 = GetIntegral_RECTANGLE(a, b, n*2);
@@ -205,7 +276,7 @@ namespace MathLib
             return Math.Round(y2, len);
         }
 
-        public double GetIntegral_TRAPEZE(double a, double b, int n)
+        public double GetIntegral_TRAPEZE(double a, double b, int n)        //Нахождение определенного интеграла функции с помощью метода трапеций
         {
             double h, S, x;
             int i;
@@ -220,7 +291,7 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_TRAPEZE(double a, double b, int n, double eps)
+        public double GetIntegral_TRAPEZE(double a, double b, int n, double eps)        //Нахождение определенного интеграла функции с помощью метода трапеций с указанной точностью
         {
             int len = eps.ToString().Replace("0,", string.Empty).Length;
             double y1 = GetIntegral_TRAPEZE(a, b, n), y2 = GetIntegral_TRAPEZE(a, b, n * 2);
@@ -233,7 +304,7 @@ namespace MathLib
             return Math.Round(y2, len);
         }
 
-        public double GetIntegral_SIMPSON(double a, double b, int n)
+        public double GetIntegral_SIMPSON(double a, double b, int n)        //Нахождение определенного интеграла функции с помощью метода Симпсона
         {
             double h, S, x;
             int i;
@@ -248,7 +319,7 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_SIMPSON(double a, double b, int n, double eps)
+        public double GetIntegral_SIMPSON(double a, double b, int n, double eps)        //Нахождение определенного интеграла функции с помощью метода Симпсона с указанной точностью
         {
             int len = eps.ToString().Replace("0,", string.Empty).Length;
             double y1 = GetIntegral_SIMPSON(a, b, n), y2 = GetIntegral_SIMPSON(a, b, n * 2);
@@ -260,5 +331,24 @@ namespace MathLib
             }
             return Math.Round(y2, len);
         }
+
+        public double GetDifferential_RUNGE_KUTTA(double x, double y, double h, double xl)      //Метод для нахождения производной с помощью метода Рунге-Кутты 4-го порядка
+        {
+            double k1, k2, k3, k4, d;
+            int n = 1;
+            for (; x <= xl; x += h)
+            {
+                IterationsHistory += n+") x=" + x + "  , y=" + y + "\r\n";
+                k1 = h * F2(x, y);
+                k2 = h * F2(x + h / 2, y + k1 / 2);
+                k3 = h * F2(x + h / 2, y + k2 / 2);
+                k4 = h * F2(x + h, y + k3);
+                d = (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+                y += d;
+                n++;
+            }
+            return y;
+        }
+
     }
 }

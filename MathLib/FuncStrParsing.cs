@@ -25,6 +25,7 @@ namespace MathLib
             funcStr = funcStr.Replace("ln", "Math.Log");
             funcStr = funcStr.Replace("lg", "Math.Log10");
             funcStr = funcStr.Replace("e", "Math.E");
+            funcStr = funcStr.Replace("sqrt", "Math.Sqrt");
             return funcStr;
         }
 

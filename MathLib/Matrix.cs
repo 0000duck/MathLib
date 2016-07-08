@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
+using System.Windows.Forms;
 
 namespace MathLib
 {
@@ -9,7 +11,6 @@ namespace MathLib
     {
         double[,] matrixBody;
         double[] matrixAns;
-        double[,] identityMatrix;
 
         public double[,] MatrixBody    //Матрица коэффициентов
         {
@@ -30,7 +31,7 @@ namespace MathLib
         {
             get
             {
-                return new Matrix(identityMatrix);
+                return GetIdentityMatrix(Rows);
             }
         }
 
@@ -63,7 +64,7 @@ namespace MathLib
 
         public static Matrix operator +(Matrix m1, Matrix m2)       //сложение матриц
         {
-            return m1.Add(m2);
+            return m1.Plus(m2);
         }
 
         public static Matrix operator -(Matrix m1, Matrix m2)       //вычитание матриц
@@ -94,49 +95,37 @@ namespace MathLib
         {
             this.matrixBody = new double[size, size];
             this.matrixAns = new double[size];
-            this.identityMatrix = this.InitIdentityMatrix(size);
         }
 
         public Matrix(int rows, int columns)    //Инициализирует пустую матрицу с заданным количеством строк и столбцов
         {
             this.matrixBody = new double[rows, columns];
             this.matrixAns = new double[rows];
-            this.identityMatrix = this.InitIdentityMatrix(rows);
         }
 
         public Matrix(double[,] mBody, double[] mAns)      //Инициализирует матрицу по заданному двумерному массиву и массиву со значениями выражений
         {
             this.matrixBody = (double[,])mBody.Clone();
             this.matrixAns = (double[])mAns.Clone();
-            this.identityMatrix = this.InitIdentityMatrix(mBody.GetLength(0));
         }
 
         public Matrix(Matrix m)      //Инициализирует матрицу по заданному двумерному массиву и массиву со значениями выражений
         {
             this.matrixBody = (double[,])m.matrixBody.Clone();
-            this.matrixAns = (double[])m.matrixAns.Clone();          
-            this.identityMatrix = this.InitIdentityMatrix(this.matrixBody.GetLength(0));
+            if(m.MatrixAns != null)
+                this.matrixAns = (double[])m.matrixAns.Clone();          
         }
 
-        Matrix(double[,] mBody)
+        public Matrix(double[,] mBody)
         {
             this.matrixBody = (double[,])mBody.Clone();
-            this.identityMatrix = this.InitIdentityMatrix(mBody.GetLength(0));
         }
 
         /////////////////////////////////////////////////////////////
         /////////////////////////***Методы***////////////////////////
         /////////////////////////////////////////////////////////////
 
-        double[,] InitIdentityMatrix(int n)
-        {
-            double[,] m = new double[n, n];
-            for (int i = 0; i < n; i++)
-                m[i, i] = 1;
-            return m;
-        }
-
-        public Matrix Add(Matrix Matrix2)
+        public Matrix Plus(Matrix Matrix2)
         {
             if (this.Rows != Matrix2.Rows || this.Columns != Matrix2.Columns)
                 return null;
@@ -196,126 +185,22 @@ namespace MathLib
             return m;
         }
 
-        /*        Matrix Gauss_Jordan_matrix()
+        public Matrix RoundElements(int n)  //Округляет элементы матрицы до n-го знака после запятой
+        {
+            Matrix m = new Matrix(this);
+            for (int i = 0; i < m.Rows; i++)
+            {
+                for (int j = 0; j < m.Columns; j++)
                 {
-                    Matrix m = new Matrix(this.matrixBody, this.matrixAns);
-                    double[,] a = m.matrixBody;
-                    double[,] rev_a = m.reverseMatrix;
-                    double[] x = m.matrixAns;
-                    double h;
-
-
-                    for (int k = 0; k < m.Columns; k++)
-                    {
-                        for (int j = k + 1; j < m.Rows; j++)
-                        {
-                            h = a[j, k] / a[k, k];
-                            for (int i = 0; i < m.Rows; i++)
-                            {
-                                a[j, i] -= h * a[k, i];
-                                rev_a[j, i] -= h * rev_a[k, i];
-                            }
-
-                            x[j] -= h * x[k];
-                        }
-                    }
-
-                    for (int k = m.Columns - 1; k >= 0; k--)
-                    {
-                        for (int j = k - 1; j >= 0; j--)
-                        {
-                            h = a[j, k] / a[k, k];
-                            for (int i = 0; i < m.Rows; i++)
-                            {
-                                a[j, i] -= h * a[k, i];
-                                rev_a[j, i] -= h * rev_a[k, i];
-                            }
-
-                            x[j] -= h * x[k];
-                        }
-                    }
-
-                    for (int i = Rows - 1; i >= 0; i--)
-                    {
-                        x[i] = x[i] / a[i, i];
-                    }
-
-                    for (int i = 0; i < m.Rows; i++)
-                        for (int j = 0; j < m.Columns; j++)
-                        {
-                            rev_a[i, j] /= a[i, i];
-                        }
-
-                    return m;
+                    m.MatrixBody[i, j] = Math.Round(m.MatrixBody[i, j], n);
                 }
-
-                public double[] Get_args_GAUSS_M()            //Решение СЛАУ (матрицы) методом Гаусса
+                if(m.MatrixAns != null)
                 {
-                    return Gauss_Jordan_matrix().MatrixAns;
+                    m.MatrixAns[i] = Math.Round(m.MatrixAns[i], n);
                 }
-
-                public double[] Get_args_EASY_ITERATION_M(double eps)
-                {
-                    Matrix m = new Matrix(Rows, Columns);
-                    double[,] a = m.MatrixBody;
-                    double[] b = m.MatrixAns;
-                    double[] x0 = new double[Rows];
-                    double[] x1 = new double[Rows];
-                    double norm = 0;
-
-                    for (int i = 0; i < Rows; i++)
-                    {
-                        b[i] = matrixAns[i] / matrixBody[i, i];
-                        for (int j = 0; j < Columns; j++)
-                        {
-                            if (i != j)
-                            {
-                                a[i, j] = -matrixBody[i, j] / matrixBody[i, i];
-                            }
-                        }
-                    }
-
-                    for (int i = 0; i < Columns; i++)
-                    {
-                        double max = 0;
-                        for (int j = 0; j < Rows; j++)
-                        {
-                            max += a[j, i];
-                        }
-                        if (max > norm)
-                            norm = max;
-                    }
-
-                    b.CopyTo(x1, 0);
-                    double sum = 0;
-
-                    do
-                    {
-                        double[] diff = new double[Rows];
-                        x1.CopyTo(x0, 0);
-                        x1 = new double[Rows];
-
-                        for (int i = 0; i < Rows; i++)
-                        {
-                            for (int j = 0; j < Columns; j++)
-                            {
-                                x1[i] += a[i, j] * x0[j];
-                            }
-                            x1[i] += b[i];
-                            diff[i] = x1[i] - x0[i];
-                        }
-
-                        sum = diff.Sum(i => Math.Abs(i));
-                    }
-                    while (sum > eps * (1 - norm) / norm);
-
-                    return x1;
-                }
-
-                public Matrix GetReverseMatrix()            //Решение СЛАУ (матрицы) методом Гаусса
-                {
-                    return new Matrix(Gauss_Jordan_matrix().reverseMatrix);
-                }*/
+            }
+            return m;
+        }
 
         public double GetTrace()
         {
@@ -327,13 +212,27 @@ namespace MathLib
             return val;
         }
 
+        public Vector[] ToVectors()
+        {
+            Vector[] vectors = new Vector[Columns];
+            double[] ans = new double[Columns];
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Columns; j++)
+                {
+                    ans[j] = MatrixBody[j, i];
+                }
+                vectors[i] = new Vector(ans);
+            }
+            return vectors;
+        }
+
         public Matrix GetTriangleMatrix()   //метод приведения матрицы к треугольному виду
         {
             Matrix m = new Matrix(this.matrixBody, this.matrixAns);
             double[,] a = m.matrixBody;
             double[] x = m.matrixAns;
             double h;
-
 
             for (int k = 0; k < m.Columns; k++)
             {
@@ -344,11 +243,11 @@ namespace MathLib
                     {
                         a[i, j] -= h * a[k, j];
                     }
-
+                    
                     x[i] -= h * x[k];
                 }
             }
-
+            
             return m;
         }
 
@@ -390,8 +289,10 @@ namespace MathLib
             int n = Rows;
             double[] x1 = new double[n];
             double[,] a = new double[n, n];
+            
             for (int i = 0; i < n; i++)
             {
+
                 for (int j = 0; j < n; j++)
                 {
                     if (i == j)
@@ -400,11 +301,13 @@ namespace MathLib
                         x1[j] = 0;
                 }
                 Matrix m = new Matrix(this.matrixBody, x1);
+
                 double[] x = m.GetArgs_GAUSS_M();
                 for (int j = 0; j < n; j++)
                 {
                     a[j, i] = x[j];
                 }
+                
             }
             return new Matrix(a);
         }
@@ -471,10 +374,51 @@ namespace MathLib
 
         public double[] GetEigenValues()
         {
-            return GetEigenValues_LEVERRIER_FADDEEV();
+            double[] p = GetCharactPolynomial().Select(e => e*(-1)).ToArray();
+            Function f = new Function(p);
+            return f.FindRoots_CHORD(eps:0.00001).ToArray();
         }
 
-        public double[] GetEigenValues_LEVERRIER_FADDEEV()
+        public Vector[] GetEigenVectors()
+        {
+            int n = Rows;
+            double[] la = GetEigenValues();
+            Matrix A = new Matrix(this), B;
+            Matrix[] arrB = new Matrix[n - 1];
+            Vector y, b;
+            Vector[] res = new Vector[n];
+            double val;
+
+            for(int i = 0; i < n-1; i++)
+            {
+                val = A.GetTrace() / (i + 1);
+                B = A - val * A.IdentityMatrix;
+                A = this * B;
+                arrB[i] = new Matrix(B);
+            }
+
+            for (int i = 0; i < la.Length; i++)
+            {
+                y = Matrix.GetIdentityMatrix(n).ToVectors()[0];
+                for (int j = 0; j < n - 1; j++)
+                {
+                    b = arrB[j].ToVectors()[0];
+                    y = y * la[i] + b;
+                }
+                res[i] = new Vector(y);
+            }
+
+            return res;
+        }
+
+        //-------------------Методы вычисления характеристического многочлена матрицы------------------//
+
+        public double[] GetCharactPolynomial()
+        {
+            return GetCharactPolynomial_LEVERRIER_FADDEEV();
+        }
+
+        public double[] GetCharactPolynomial_LEVERRIER_FADDEEV()    //Метод Леверье-Фадеева
         {
             Matrix a = new Matrix(this), b;
             double val;
@@ -489,6 +433,56 @@ namespace MathLib
             }
 
             return p;
+        }
+
+        /////////////////////////////////////////////////////////////
+        ///////////////////***Статические методы***//////////////////
+        /////////////////////////////////////////////////////////////
+
+        public static Matrix GetIdentityMatrix(int size)
+        {
+            double[,] m = new double[size, size];
+            for (int i = 0; i < size; i++)
+                m[i, i] = 1;
+
+            return new Matrix(m);
+        }
+
+        /////////////////////////////////////////////////////////////
+        /////////////***Методы получения HTML-отчетов***/////////////
+        /////////////////////////////////////////////////////////////
+        public Matrix GetTriangleMatrix_VSReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
+        {
+            HtmlReportCreator rep = new HtmlReportCreator(reportName);
+            Matrix m = new Matrix(this.matrixBody, this.matrixAns);
+            double[,] a = m.matrixBody;
+            double[] x = m.matrixAns;
+            double h;
+
+            rep.WriteLine("Исходная матрица:");
+            rep.WriteMatrix(new Matrix(m));
+
+            for (int k = 0; k < m.Columns; k++)
+            {
+                for (int i = k + 1; i < m.Rows; i++)
+                {
+                    h = a[i, k] / a[k, k];
+                    for (int j = 0; j < m.Columns; j++)
+                    {
+                        a[i, j] -= h * a[k, j];
+                    }
+
+                    x[i] -= h * x[k];
+                    
+                    rep.WriteLine("Шаг " + i + ": ( a" + (i + 1) + " = a" + (i + 1) + " - a" + i + ")");
+                    rep.WriteMatrix(new Matrix(m));
+                }
+            }
+
+            if(IsGenerate)
+                rep.GenerateReport();
+
+            return m;
         }
 
     }
