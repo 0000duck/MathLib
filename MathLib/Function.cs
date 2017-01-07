@@ -8,10 +8,17 @@ namespace MathLib
     public delegate double Dfunction(double x);  // делегат, ссылающийся на определенную функцию
     public delegate double Dfunction2(double x, double y);
 
+    [Serializable]
     public class Dot  // тип, характеризующий координаты точки на плоскости
     {
         public double X { set; get; }
         public double Y { set; get; }
+		
+		public Dot()
+        {
+           
+        }
+		
         public Dot(double X, double Y)
         {
             this.X = X;

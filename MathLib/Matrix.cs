@@ -451,7 +451,7 @@ namespace MathLib
         /////////////////////////////////////////////////////////////
         /////////////***Методы получения HTML-отчетов***/////////////
         /////////////////////////////////////////////////////////////
-        public Matrix GetTriangleMatrix_VSReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
+        public Matrix GetTriangleMatrix_HtmlReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
         {
             HtmlReportCreator rep = new HtmlReportCreator(reportName);
             Matrix m = new Matrix(this.matrixBody, this.matrixAns);
