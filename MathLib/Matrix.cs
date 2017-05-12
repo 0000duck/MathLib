@@ -135,7 +135,7 @@ namespace MathLib
         /// <returns>
         /// The result of the matrix multiplication by number.
         /// </returns>
-        public static Matrix operator *(Matrix m, double number)       //умножение матрицы на число
+        public static Matrix operator *(Matrix m, double number)
         {
             return m.Multiply(number);
         }
@@ -148,7 +148,7 @@ namespace MathLib
         /// <returns>
         /// The result of the matrix multiplication by number.
         /// </returns>
-        public static Matrix operator *(double number, Matrix m)       //умножение матрицы на число
+        public static Matrix operator *(double number, Matrix m)
         {
             return m.Multiply(number);
         }
@@ -161,7 +161,7 @@ namespace MathLib
         /// <returns>
         /// The result of the matrix multiplication by other matrix.
         /// </returns>
-        public static Matrix operator *(Matrix m1, Matrix m2)       //умножение двух матриц
+        public static Matrix operator *(Matrix m1, Matrix m2)
         {
             return m1.Multiply(m2);
         }
