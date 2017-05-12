@@ -35,8 +35,8 @@ namespace MathLib
         public Function(params double[] koef)   //Конструктор, инициализирующий функцию по коэффициентам уравнения степени N(зависит от количества коэффициентов);
         {
             this.F = delegate(double x){
-                double val = Math.Pow(x, koef.Length);
-                for(int i = 0; i < koef.Length; i++)
+                double val = Math.Pow(x, koef.Length - 1);
+                for(int i = 1; i < koef.Length; i++)
                 {
                     val += koef[i] * Math.Pow(x, koef.Length - (i+1));
                 }

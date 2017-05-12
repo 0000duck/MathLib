@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text;
-using System.Windows.Forms;
 
 namespace MathLib
 {
@@ -87,6 +85,11 @@ namespace MathLib
             return m1.Multiply(m2);
         }
 
+        public static Vector operator *(Matrix m, Vector v)       //умножение матрицы на вектор
+        {
+            return m.Multiply(v);
+        }
+
         /////////////////////////////////////////////////////////////
         /////////////////////***Конструкторы***//////////////////////
         /////////////////////////////////////////////////////////////
@@ -109,6 +112,25 @@ namespace MathLib
             this.matrixAns = (double[])mAns.Clone();
         }
 
+        public Matrix(IEnumerable<Vector> vBody, Vector vAns)      //Инициализирует матрицу по заданному массиву векторов и результирующему вектору
+        {
+            int size = vBody.Count();
+            this.matrixBody = new double[size, size];
+
+            for (int i = 0; i < size; i++)
+                for (int j = 0; j < size; j++)
+                    this.matrixBody[j, i] = vBody.ElementAt(i).Body[j];
+
+            this.matrixAns = vAns.Body;
+        }
+
+        public Matrix(IEnumerable<Vector> vBody)      //Инициализирует матрицу по заданному массиву векторов
+        {
+            for (int i = 0; i < vBody.Count(); i++)
+                for (int j = 0; j < vBody.Count(); j++)
+                    this.matrixBody[j, i] = vBody.ElementAt(i).Body[j];
+        }
+
         public Matrix(Matrix m)      //Инициализирует матрицу по заданному двумерному массиву и массиву со значениями выражений
         {
             this.matrixBody = (double[,])m.matrixBody.Clone();
@@ -125,53 +147,58 @@ namespace MathLib
         /////////////////////////***Методы***////////////////////////
         /////////////////////////////////////////////////////////////
 
-        public Matrix Plus(Matrix Matrix2)
+        public Matrix Plus(Matrix matrix)
         {
-            if (this.Rows != Matrix2.Rows || this.Columns != Matrix2.Columns)
+            if (this.Rows != matrix.Rows || this.Columns != matrix.Columns)
                 return null;
-            else
-            {
-                Matrix m = new Matrix(this.Rows, this.Columns);
-                for (int i = 0; i < m.Rows; i++)
-                    for (int j = 0; j < m.Columns; j++)
-                    {
-                        m.matrixBody[i, j] = this.matrixBody[i, j] + Matrix2.matrixBody[i, j];
-                    }
-                return m;
-            }
+            
+            Matrix m = new Matrix(this.Rows, this.Columns);
+            for (int i = 0; i < m.Rows; i++)
+                for (int j = 0; j < m.Columns; j++)
+                {
+                    m.matrixBody[i, j] = this.matrixBody[i, j] + matrix.matrixBody[i, j];
+                }
+            return m;         
         }
 
-        public Matrix Minus(Matrix Matrix2)
+        public Matrix Minus(Matrix matrix)
         {
-            if (this.Rows != Matrix2.Rows || this.Columns != Matrix2.Columns)
+            if (this.Rows != matrix.Rows || this.Columns != matrix.Columns)
                 return null;
-            else
-            {
-                Matrix m = new Matrix(this.Rows, this.Columns);
-                for (int i = 0; i < m.Rows; i++)
-                    for (int j = 0; j < m.Columns; j++)
-                    {
-                        m.matrixBody[i, j] = this.matrixBody[i, j] - Matrix2.matrixBody[i, j];
-                    }
-                return m;
-            }
+            
+            Matrix m = new Matrix(this.Rows, this.Columns);
+            for (int i = 0; i < m.Rows; i++)
+                for (int j = 0; j < m.Columns; j++)
+                    m.matrixBody[i, j] = this.matrixBody[i, j] - matrix.matrixBody[i, j];
+                    
+            return m;
         }
 
-        public Matrix Multiply(Matrix Matrix2)
+        public Vector Multiply(Vector v)
         {
-            if (this.Columns != Matrix2.Rows)
+            if (this.Columns != v.Size)
                 return null;
-            else
-            {
-                Matrix m = new Matrix(this.Rows, Matrix2.Columns);
-                for (int c = 0; c < m.Columns; c++)
-                    for (int i = 0; i < m.Rows; i++)
-                        for (int j = 0; j < m.Columns; j++)
-                        {
-                            m.matrixBody[i, c] += this.matrixBody[i, j] * Matrix2.matrixBody[j, c];
-                        }
-                return m;
-            }
+            
+            Vector ans = new Vector(v.Size);
+            for (int i = 0; i < this.Rows; i++)
+                for (int j = 0; j < this.Columns; j++)
+                    ans.Body[i] += this.MatrixBody[i, j] * v.Body[j];
+
+            return ans;     
+        }
+
+        public Matrix Multiply(Matrix matrix)
+        {
+            if (this.Columns != matrix.Rows)
+                return null;
+  
+            Matrix m = new Matrix(this.Rows, matrix.Columns);
+            for (int c = 0; c < m.Columns; c++)
+                for (int i = 0; i < m.Rows; i++)
+                    for (int j = 0; j < m.Columns; j++)                  
+                        m.matrixBody[i, c] += this.matrixBody[i, j] * matrix.matrixBody[j, c];
+
+            return m;
         }
 
         public Matrix Multiply(double number)
@@ -179,9 +206,8 @@ namespace MathLib
             Matrix m = new Matrix(this.Rows, this.Columns);
             for (int i = 0; i < m.Rows; i++)
                 for (int j = 0; j < m.Columns; j++)
-                {
                     m.matrixBody[i, j] = this.matrixBody[i, j] * number;
-                }
+  
             return m;
         }
 
@@ -212,7 +238,22 @@ namespace MathLib
             return val;
         }
 
-        public Vector[] ToVectors()
+        public void SetLine(int index, double[] arr)
+        {
+            for (int i = 0; i < Columns; i++)
+                MatrixBody[index, i] = arr[i];
+        }
+
+        public Vector GetLine(int index)
+        {
+            double[] ans = new double[Columns];
+            for (int i = 0; i < Columns; i++)
+                ans[i] = MatrixBody[index, i];
+
+            return new Vector(ans);
+        }
+
+        public IEnumerable<Vector> ToVectors()
         {
             Vector[] vectors = new Vector[Columns];
             double[] ans = new double[Columns];
@@ -251,14 +292,27 @@ namespace MathLib
             return m;
         }
 
+        public Matrix GetT()
+        {
+            Matrix m = new Matrix(this);
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Columns; j++)
+                {
+                    m.MatrixBody[i, j] = this.MatrixBody[j, i];
+                }
+            }
+            return m;
+        }
+
         //-------------------Методы вычисления аргументов матрицы------------------//
 
-        public double[] GetArgs()
+        public IEnumerable<double> GetArgs()
         {
             return GetArgs_GAUSS_M();
         }
 
-        public double[] GetArgs_GAUSS_M()
+        public IEnumerable<double> GetArgs_GAUSS_M()
         {
             Matrix m = GetTriangleMatrix();
             double[,] a = m.matrixBody;
@@ -302,7 +356,7 @@ namespace MathLib
                 }
                 Matrix m = new Matrix(this.matrixBody, x1);
 
-                double[] x = m.GetArgs_GAUSS_M();
+                double[] x = m.GetArgs_GAUSS_M().ToArray();
                 for (int j = 0; j < n; j++)
                 {
                     a[j, i] = x[j];
@@ -372,17 +426,17 @@ namespace MathLib
 
         //-------------------Методы вычисления собственных значений и векторов матрицы------------------//
 
-        public double[] GetEigenValues()
+        public IEnumerable<double> GetEigenValues()
         {
-            double[] p = GetCharactPolynomial().Select(e => e*(-1)).ToArray();
+            double[] p = GetCharactPolynom().Select(e => e*(-1)).ToArray();
             Function f = new Function(p);
-            return f.FindRoots_CHORD(eps:0.00001).ToArray();
+            return f.FindRoots_CHORD(eps:0.00001, steps:1000).ToArray();
         }
 
-        public Vector[] GetEigenVectors()
+        public IEnumerable<Vector> GetEigenVectors()
         {
             int n = Rows;
-            double[] la = GetEigenValues();
+            double[] la = GetEigenValues().ToArray();
             Matrix A = new Matrix(this), B;
             Matrix[] arrB = new Matrix[n - 1];
             Vector y, b;
@@ -399,10 +453,10 @@ namespace MathLib
 
             for (int i = 0; i < la.Length; i++)
             {
-                y = Matrix.GetIdentityMatrix(n).ToVectors()[0];
+                y = Matrix.GetIdentityMatrix(n).ToVectors().ToArray()[0];
                 for (int j = 0; j < n - 1; j++)
                 {
-                    b = arrB[j].ToVectors()[0];
+                    b = arrB[j].ToVectors().ToArray()[0];
                     y = y * la[i] + b;
                 }
                 res[i] = new Vector(y);
@@ -413,26 +467,96 @@ namespace MathLib
 
         //-------------------Методы вычисления характеристического многочлена матрицы------------------//
 
-        public double[] GetCharactPolynomial()
+        public IEnumerable<double> GetCharactPolynom()
         {
-            return GetCharactPolynomial_LEVERRIER_FADDEEV();
+            return GetCharactPolynomLeverrierFaddeev();
         }
 
-        public double[] GetCharactPolynomial_LEVERRIER_FADDEEV()    //Метод Леверье-Фадеева
+        public IEnumerable<double> GetCharactPolynomLeverrier()    //Метод Леверье
+        {
+            Matrix a = new Matrix(this);
+            double[] p = new double[Rows + 1],
+                     s = new double[Rows];
+            p[0] = -1;
+            for (int i = 0; i < Rows; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j < i; j++)
+                    sum += p[j + 1] * s[i - j - 1];
+
+                s[i] = a.GetTrace();
+                p[i + 1] = 1.0 / (i + 1) * (s[i] - sum);
+                a *= this;
+            }
+            return p;
+        }
+
+        public IEnumerable<double> GetCharactPolynomLeverrierFaddeev()    //Метод Леверье-Фадеева
         {
             Matrix a = new Matrix(this), b;
             double val;
-            double[] p = new double[Rows];
+            double[] p = new double[Rows + 1];
+            p[0] = -1;
 
             for(int i = 0; i < Rows; i++)
             {
                 val = a.GetTrace()/(i+1);
-                p[i] = val;
+                p[i + 1] = val;
                 b = a - val * a.IdentityMatrix;
                 a = this * b;
             }
 
             return p;
+        }
+
+        public IEnumerable<double> GetCharactPolynomDanilevskiy()
+        {
+            Vector coefs = new Vector(Rows + 1);
+            Matrix s = Matrix.GetIdentityMatrix(Rows);
+            Matrix m;
+            Matrix mInv;
+            Matrix a = new Matrix(this);
+            for (int i = Rows - 2; i >= 0; i--)
+            {
+                m = Matrix.GetIdentityMatrix(Rows);
+                m.MatrixBody[i, i] = 1 / a.MatrixBody[i + 1, i];
+                for (int j = 0; j < Rows; j++)
+                {
+                    if (i != j)
+                        m.MatrixBody[i, j] = -a.MatrixBody[i + 1, j] / a.MatrixBody[i + 1, i];
+                }
+                mInv = Matrix.GetIdentityMatrix(Rows);
+                mInv.SetLine(i, a.GetLine(i + 1).Body);
+                a = mInv * a * m;
+                s *= m;
+            }
+            coefs.Body[0] = -1;
+
+            for (int i = 1; i < coefs.Body.Length; i++)
+                coefs.Body[i] = a.MatrixBody[0, i - 1];
+
+            return coefs.Body;
+        }
+
+        public IEnumerable<double> GetCharactPolynomKrylov()
+        {
+            Matrix a = new Matrix(this);
+            Vector c = new Vector(new double[Rows]);
+            c.Body[0] = 1;
+
+            var vectors = new Vector[Rows + 1];
+            vectors[0] = c;
+            for (int i = 1; i < Rows + 1; i++)
+            {
+                vectors[i] = a * c;
+                a *= this;
+            }
+            Matrix mAns = new Matrix(vectors.Take(Rows), vectors[Rows]);
+            var ans = mAns.GetArgs().ToList();
+            ans.Add(-1);
+            ans.Reverse();
+
+            return ans;
         }
 
         /////////////////////////////////////////////////////////////
@@ -451,7 +575,7 @@ namespace MathLib
         /////////////////////////////////////////////////////////////
         /////////////***Методы получения HTML-отчетов***/////////////
         /////////////////////////////////////////////////////////////
-        public Matrix GetTriangleMatrix_VSReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
+        public Matrix GetTriangleMatrix_HtmlReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
         {
             HtmlReportCreator rep = new HtmlReportCreator(reportName);
             Matrix m = new Matrix(this.matrixBody, this.matrixAns);

@@ -30,6 +30,16 @@ namespace MathLib
             return v1.Plus(v2);
         }
 
+        public static string operator +(string s, Vector v)       //сложение вектора со строкой
+        {
+            return s + v.ToString();
+        }
+
+        public static string operator +(Vector v, string s)       //сложение вектора со строкой
+        {
+            return v.ToString() + s;
+        }
+
         public static Vector operator -(Vector v1, Vector v2)       //вычитание векторов
         {
             return v1.Minus(v2);
@@ -45,7 +55,7 @@ namespace MathLib
             return v.Multiply(number);
         }
 
-        //public static Vector operator *(Vector v1, Vector v2)       //умножение двух матриц
+        //public static Vector operator *(Vector v1, Vector v2)       //умножение двух векторов
         //{
         //    return m1.Multiply(m2);
         //}
@@ -93,6 +103,18 @@ namespace MathLib
                 v.Body[i] *= number;
             }
             return v;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder s = new StringBuilder();
+            for(int i = 0; i < Size; i++)
+            {
+                s.Append(Body[i]);
+                if (i != Size - 1)
+                    s.Append("; ");
+            }
+            return string.Format("({0})", s.ToString());
         }
 
     }
