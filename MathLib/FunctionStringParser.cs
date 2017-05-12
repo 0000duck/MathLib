@@ -1,7 +1,15 @@
 ﻿namespace MathLib
 {
+    /// <summary>
+    /// Provides convertation from usual function string to system function string
+    /// </summary>
     static class FunctionStringParser
     {
+        /// <summary>
+        /// Convert function string from simple to system syntax.
+        /// </summary>
+        /// <param name="funcStr">The function string.</param>
+        /// <returns></returns>
         public static string ToSystemSyntax(string funcStr)
         {
             funcStr = funcStr.Replace(" ", string.Empty);
@@ -11,8 +19,7 @@
             funcStr = funcStr.Replace("/", " / ");
             funcStr = funcStr.Replace("(", "( ");
             funcStr = funcStr.Replace(")", " )");
-            funcStr = Replace_pow(funcStr);
-            //fStr = Replace_factorial(fStr);
+            funcStr = ReplacePow(funcStr);
             funcStr = funcStr.Replace("sin", "Math.Sin");
             funcStr = funcStr.Replace("cos", "Math.Cos");
             funcStr = funcStr.Replace("tg", "Math.Tan");
@@ -21,10 +28,11 @@
             funcStr = funcStr.Replace("lg", "Math.Log10");
             funcStr = funcStr.Replace("e", "Math.E");
             funcStr = funcStr.Replace("sqrt", "Math.Sqrt");
+
             return funcStr;
         }
 
-        static string Replace_pow(string str)
+        private static string ReplacePow(string str)
         {
             string leftVal, rightVal;
             for (int i = 0; i < str.Length; i++)
@@ -32,8 +40,8 @@
                 if (str[i] == '^')
                 {
                     leftVal = rightVal = null;
-                    Str_detect(ref str, ref leftVal, i, 'l');
-                    Str_detect(ref str, ref rightVal, i, 'r');
+                    StrDetect(ref str, ref leftVal, i, 'l');
+                    StrDetect(ref str, ref rightVal, i, 'r');
                     str = str.Replace(leftVal + "^" + rightVal, "Math.Pow(" + leftVal + "," + rightVal + ")");
                 }
 
@@ -41,57 +49,42 @@
             return str;
         }
 
-        //static string Replace_factorial(string str)
-        //{
-        //    string value;
-        //    for (int i = 0; i < str.Length; i++)
-        //    {
-        //        if (str[i] == '!')
-        //        {
-        //            value = null;
-        //            Str_detect(ref str, ref value, i, 'l');
-        //            str = str.Replace(value + "!", Fact(Convert.ToInt32(value)));
-        //        }
-
-        //    }
-        //    return str;
-        //}
-
-        static void Str_detect(ref string s, ref string value, int cur_pos, char way)
+       
+        private static void StrDetect(ref string s, ref string value, int currPos, char way)
         {
-            int step, index, B_br_cnt = 0, E_br_cnt = 0;
-            char Begin_brack, End_brack;
-            bool Close_brack = false;
+            int step, index, beginBrackCnt = 0, endBrackCnt = 0;
+            char beginBrack, endBrack;
+            bool closeBrack = false;
 
             if (way == 'l')
             {
                 step = -1;
-                Begin_brack = ')';
-                End_brack = '(';
+                beginBrack = ')';
+                endBrack = '(';
             }
             else
             {
                 step = 1;
-                Begin_brack = '(';
-                End_brack = ')';
+                beginBrack = '(';
+                endBrack = ')';
             }
 
-            index = cur_pos + step;
+            index = currPos + step;
 
             do
             {
-                if (s[cur_pos + step] == Begin_brack && !Close_brack)
+                if (s[currPos + step] == beginBrack && !closeBrack)
                 {
-                    if (s[index] == Begin_brack)
-                        B_br_cnt++;
-                    if (s[index] == End_brack)
-                        E_br_cnt++;
+                    if (s[index] == beginBrack)
+                        beginBrackCnt++;
+                    if (s[index] == endBrack)
+                        endBrackCnt++;
 
-                    if (B_br_cnt != E_br_cnt)
+                    if (beginBrackCnt != endBrackCnt)
                         index += step;
                     else
                     {
-                        Close_brack = true;
+                        closeBrack = true;
                     }
                 }
                 else
@@ -99,9 +92,9 @@
                     if (index == 0 || index == s.Length - 1 || s[index + step] == ' ')
                     {
                         if (way == 'l')
-                            value = s.Substring(index, cur_pos - index);
+                            value = s.Substring(index, currPos - index);
                         else
-                            value = s.Substring(cur_pos + 1, index - cur_pos);
+                            value = s.Substring(currPos + 1, index - currPos);
                     }
                     else
                     {
