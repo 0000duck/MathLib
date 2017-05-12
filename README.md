@@ -13,7 +13,7 @@ In the class Matrix.cs implemented functionality:
   9. Get eigen values, vectors of matrix;
   10. Get characteristic polynom of matrix (by Leverrier, Leverrier-Faddeev, Danilevskiy, Krylov methods);
   
-In the class Matrix.cs implemented functionality:
+In the class Function.cs implemented functionality:
   1. Get roots (by Chords, Dichotomy, Golden-Section, Phibonacci methods);
   2. Get integral (by Rectangle, Trapeze, Simpsons methods);
   3. Get differential (by Runge-Kutta method);
