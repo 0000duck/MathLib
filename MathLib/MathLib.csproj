@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DelegateGenerator.cs" />
-    <Compile Include="FuncStrParsing.cs" />
+    <Compile Include="FunctionStringParser.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

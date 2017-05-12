@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MathLib
 {
-    static class FuncStrParsing
+    static class FunctionStringParser
     {
         public static string ToSystemSyntax(string funcStr)
         {

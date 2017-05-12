@@ -1,24 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace MathLib
 {
-    public delegate double Dfunction(double x);  // делегат, ссылающийся на определенную функцию
+    /// <summary>
+    /// f(x) delegate
+    /// </summary>
+    /// <param name="x">The x.</param>
+    /// <returns></returns>
+    public delegate double Dfunction(double x);
+    /// <summary>
+    /// f(x1, x2) delegate
+    /// </summary>
+    /// <param name="x">The x.</param>
+    /// <param name="y">The y.</param>
+    /// <returns></returns>
     public delegate double Dfunction2(double x, double y);
 
+    /// <summary>
+    /// Represent a geometric point
+    /// </summary>
     [Serializable]
-    public class Dot  // тип, характеризующий координаты точки на плоскости
+    public class Dot
     {
+        /// <summary>
+        /// Gets or sets the X-Axis value.
+        /// </summary>
+        /// <value>
+        /// The x.
+        /// </value>
         public double X { set; get; }
+        /// <summary>
+        /// Gets or sets the Y-Axis value.
+        /// </summary>
+        /// <value>
+        /// The y.
+        /// </value>
         public double Y { set; get; }
 		
 		public Dot()
         {
            
         }
-		
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Dot"/> class.
+        /// </summary>
+        /// <param name="X">The x.</param>
+        /// <param name="Y">The y.</param>
         public Dot(double X, double Y)
         {
             this.X = X;
@@ -26,20 +56,32 @@ namespace MathLib
         }
     }
 
+    /// <summary>
+    /// Represent mathematical function and methods to work with it
+    /// </summary>
     public class Function
     {
+        Dot[] _lagrangeDots;
+
         public Dfunction F { get; set; }
         public Dfunction2 F2 { get; set; }
-        Dot[] lagrangeDots;
         public string IterationsHistory { get; set; }
 
-        public Function(Dot[] lagrangeDots)     //Конструктор, инициализирующий функцию по точкам с помощью полинома Лагранжа
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class.
+        /// </summary>
+        /// <param name="lagrangeDots">The Lagrange polynom dots.</param>
+        public Function(Dot[] lagrangeDots)
         {
-            this.lagrangeDots = lagrangeDots;
+            this._lagrangeDots = lagrangeDots;
             this.F = Polinom;
         }
 
-        public Function(params double[] koef)   //Конструктор, инициализирующий функцию по коэффициентам уравнения степени N(зависит от количества коэффициентов);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class.
+        /// </summary>
+        /// <param name="koef">The koef of N-order polynom.</param>
+        public Function(params double[] koef)
         {
             this.F = delegate(double x){
                 double val = Math.Pow(x, koef.Length - 1);
@@ -51,21 +93,33 @@ namespace MathLib
             };
         }
 
-        public Function(Dfunction FDelegate)    //Конструктор, инициализирующий функцию по делегату
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class.
+        /// </summary>
+        /// <param name="FDelegate">The f(x) delegate.</param>
+        public Function(Dfunction FDelegate)
         {
             this.F = FDelegate;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class.
+        /// </summary>
+        /// <param name="FDelegate">The f(x1, x2) delegate.</param>
         public Function(Dfunction2 FDelegate)
         {
             this.F2 = FDelegate;
         }
 
-        public Function(string funcStr)         //Конструктор, инициализирующий функцию по строке (например x^2+x+5)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class.
+        /// </summary>
+        /// <param name="funcStr">The function string. For example x^2+x+5.</param>
+        public Function(string funcStr)
         {
             string fStr = "public static double FuncStruct(double x)" +
                             "{" +
-                            "       return " + FuncStrParsing.ToSystemSyntax(funcStr) + ";" +
+                            "       return " + FunctionStringParser.ToSystemSyntax(funcStr) + ";" +
                             "}";
             F = DelegateGenerator.CreateDelegate<Dfunction>("FuncStruct", fStr);
         }
@@ -74,12 +128,18 @@ namespace MathLib
         {
             string fStr = "public static double FuncStruct(double x, double y)" +
                             "{" +
-                            "       return " + FuncStrParsing.ToSystemSyntax(funcStr) + ";" +
+                            "       return " + FunctionStringParser.ToSystemSyntax(funcStr) + ";" +
                             "}";
             F2 = DelegateGenerator.CreateDelegate<Dfunction2>("FuncStruct", fStr);
         }
 
-        public List<Dot> GetFunctionDots(double x1, double x2)   //Метод для получения точек построения графика
+        /// <summary>
+        /// Gets the function dots for graphical building.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <returns></returns>
+        public IEnumerable<Dot> GetFunctionDots(double x1, double x2)
         {
             List<Dot> dots = new List<Dot>();
             int Nsteps = 1000;
@@ -100,8 +160,15 @@ namespace MathLib
             return dots;
         }
 
-        // a, b - пределы хорды, eps - необходимая погрешность
-        public double FindRoot_CHORD(double x1, double x2, double eps)      //Метод для получения корня функции на интервале с помощью метода хорд с заданной точностью
+
+        /// <summary>
+        /// Get the argument of function by chord method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetArgByChord(double x1, double x2, double eps)
         {
             while (Math.Abs(x2 - x1) > eps)
             {
@@ -111,7 +178,14 @@ namespace MathLib
             return x2;
         }
 
-        public double FindRoot_DICHOTOMY(double x1, double x2, double eps)      //Метод для получения корня функции на интервале с помощью метода дихотомии с заданной точностью
+        /// <summary>
+        /// Gets the argument of function by dichotomy method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetArgByDichotomy(double x1, double x2, double eps)
         {
             double x;
             do {
@@ -124,7 +198,15 @@ namespace MathLib
             return x;
         }
 
-        public List<double> FindRoots_CHORD(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)    //Метод для получения всех корней функции на интервале с помощью метода хорд с заданной точностью
+        /// <summary>
+        /// Gets the arguments of function by chord method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <param name="steps">The steps count.</param>
+        /// <returns></returns>
+        public List<double> GetArgsByChord(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
         {
             List<double> roots = new List<double>();
             double step = (x2 - x1) / steps;
@@ -132,7 +214,7 @@ namespace MathLib
             x2 = x1 + step;
             for (int i = 1; i <= steps; i++, x1+=step, x2+=step)
             {
-                val = FindRoot_CHORD(x1, x2, eps);
+                val = GetArgByChord(x1, x2, eps);
                 if (F(x1)*F(x2) < 0)
                 {
                     roots.Add(val);
@@ -141,7 +223,15 @@ namespace MathLib
             return roots;
         }
 
-        public List<double> FindRoots_DICHOTOMY(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)    //Метод для получения всех корней функции на интервале с помощью метода дихотомии с заданной точностью
+        /// <summary>
+        /// Gets the arguments of function by dichotomy method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <param name="steps">The steps count.</param>
+        /// <returns></returns>
+        public List<double> GetArgsByDichotomy(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
         {
             List<double> roots = new List<double>();
             double step = (x2 - x1) / steps;
@@ -149,7 +239,7 @@ namespace MathLib
             x2 = x1 + step;
             for (int i = 1; i <= steps; i++, x1 += step, x2 += step)
             {
-                val = FindRoot_DICHOTOMY(x1, x2, eps);
+                val = GetArgByDichotomy(x1, x2, eps);
                 if (F(x1) * F(x2) < 0)
                 {
                     roots.Add(val);
@@ -158,14 +248,19 @@ namespace MathLib
             return roots;
         }
 
-        public double Golden_section_method(double x1, double x2, double eps)       //Метод золотого сечения для нахождения экстремумов функции на промежутке с заданой точностью
+        /// <summary>
+        /// Gets the argument of function by golden section method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetArgByGoldenSection(double x1, double x2, double eps)
         {
-            //extr_iter_dots = new List<Dot>();
             double a, b;
             int n = 0;
             a = x2 - 2 * (x2 - x1) / (1 + Math.Sqrt(5));
             b = x1 + 2 * (x2 - x1) / (1 + Math.Sqrt(5));
-
 
             while ((x2 - x1) > eps)
             {
@@ -183,13 +278,19 @@ namespace MathLib
                     a = x2 - 2 * (x2 - x1) / (1 + Math.Sqrt(5));
                     n++;
                 }
-
             }
 
             return (x1 + x2) / 2;
         }
 
-        public double Phibonacci_method(double x1, double x2, double eps)   //Метод Фибоначчи для нахождения экстремумов функции на промежутке с заданой точностью
+        /// <summary>
+        /// Gets the argument of function by Phibonacci method.
+        /// </summary>
+        /// <param name="x1">The left limit.</param>
+        /// <param name="x2">The right limit.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetArgByPhibonacci(double x1, double x2, double eps)
         {
             int n = Convert.ToInt32((x2 - x1) / eps);
             double a, b, y1, y2;
@@ -233,25 +334,32 @@ namespace MathLib
             return Math.Min(a, b);
         }
 
-        double Polinom(double arg)      //Метод для нахождения значения функции в точке с помощью полинома Лагранжа
+        private double Polinom(double arg)
         {
             double result = 0;
 
-            for (short i = 0; i < lagrangeDots.Length; i++)
+            for (short i = 0; i < _lagrangeDots.Length; i++)
             {
                 double P = 1.0;
 
-                for (short j = 0; j < lagrangeDots.Length; j++)
+                for (short j = 0; j < _lagrangeDots.Length; j++)
                     if (j != i)
-                        P *= (arg - lagrangeDots[j].X) / (lagrangeDots[i].X - lagrangeDots[j].X);
+                        P *= (arg - _lagrangeDots[j].X) / (_lagrangeDots[i].X - _lagrangeDots[j].X);
 
-                result += P * lagrangeDots[i].Y;
+                result += P * _lagrangeDots[i].Y;
             }
 
             return result;
         }
 
-        public double GetIntegral_RECTANGLE(double a, double b, int n)      //Нахождение определенного интеграла функции с помощью метода прямоугольников
+        /// <summary>
+        /// Gets the integral of function by rectangle method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <returns></returns>
+        public double GetIntegralByRectangle(double a, double b, int n)
         {
             double h, S, x, x0, x1;
             int i;
@@ -270,20 +378,35 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_RECTANGLE(double a, double b, int n, double eps)      //Нахождение определенного интеграла функции с помощью метода прямоугольников с указанной точностью
+        /// <summary>
+        /// Gets the integral of function by rectangle method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetIntegralByRectangle(double a, double b, int n, double eps)
         {
             int len = eps.ToString().Replace("0,",string.Empty).Length;
-            double y1 = GetIntegral_RECTANGLE(a, b, n), y2 = GetIntegral_RECTANGLE(a, b, n*2);
+            double y1 = GetIntegralByRectangle(a, b, n), y2 = GetIntegralByRectangle(a, b, n*2);
             while(Math.Abs(y2 - y1) > eps)
             {
                 n *= 2;
-                y1 = GetIntegral_RECTANGLE(a, b, n);
-                y2 = GetIntegral_RECTANGLE(a, b, n * 2);  
+                y1 = GetIntegralByRectangle(a, b, n);
+                y2 = GetIntegralByRectangle(a, b, n * 2);  
             }
             return Math.Round(y2, len);
         }
 
-        public double GetIntegral_TRAPEZE(double a, double b, int n)        //Нахождение определенного интеграла функции с помощью метода трапеций
+        /// <summary>
+        /// Gets the integral of function by trapeze method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <returns></returns>
+        public double GetIntegralByTrapeze(double a, double b, int n)
         {
             double h, S, x;
             int i;
@@ -298,20 +421,35 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_TRAPEZE(double a, double b, int n, double eps)        //Нахождение определенного интеграла функции с помощью метода трапеций с указанной точностью
+        /// <summary>
+        /// Gets the integral of function by trapeze method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetIntegralByTrapeze(double a, double b, int n, double eps)
         {
             int len = eps.ToString().Replace("0,", string.Empty).Length;
-            double y1 = GetIntegral_TRAPEZE(a, b, n), y2 = GetIntegral_TRAPEZE(a, b, n * 2);
+            double y1 = GetIntegralByTrapeze(a, b, n), y2 = GetIntegralByTrapeze(a, b, n * 2);
             while (Math.Abs(y2 - y1) > eps)
             {
                 n *= 2;
-                y1 = GetIntegral_TRAPEZE(a, b, n);
-                y2 = GetIntegral_TRAPEZE(a, b, n * 2);
+                y1 = GetIntegralByTrapeze(a, b, n);
+                y2 = GetIntegralByTrapeze(a, b, n * 2);
             }
             return Math.Round(y2, len);
         }
 
-        public double GetIntegral_SIMPSON(double a, double b, int n)        //Нахождение определенного интеграла функции с помощью метода Симпсона
+        /// <summary>
+        /// Gets the integral of function by Simpsons method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <returns></returns>
+        public double GetIntegralBySimpson(double a, double b, int n)
         {
             double h, S, x;
             int i;
@@ -326,20 +464,36 @@ namespace MathLib
             return S;
         }
 
-        public double GetIntegral_SIMPSON(double a, double b, int n, double eps)        //Нахождение определенного интеграла функции с помощью метода Симпсона с указанной точностью
+        /// <summary>
+        /// Gets the integral of function by Simpsons method.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <param name="n">The n.</param>
+        /// <param name="eps">The eps.</param>
+        /// <returns></returns>
+        public double GetIntegralBySimpson(double a, double b, int n, double eps)        //Нахождение определенного интеграла функции с помощью метода Симпсона с указанной точностью
         {
             int len = eps.ToString().Replace("0,", string.Empty).Length;
-            double y1 = GetIntegral_SIMPSON(a, b, n), y2 = GetIntegral_SIMPSON(a, b, n * 2);
+            double y1 = GetIntegralBySimpson(a, b, n), y2 = GetIntegralBySimpson(a, b, n * 2);
             while (Math.Abs(y2 - y1) > eps)
             {
                 n *= 2;
-                y1 = GetIntegral_SIMPSON(a, b, n);
-                y2 = GetIntegral_SIMPSON(a, b, n * 2);
+                y1 = GetIntegralBySimpson(a, b, n);
+                y2 = GetIntegralBySimpson(a, b, n * 2);
             }
             return Math.Round(y2, len);
         }
 
-        public double GetDifferential_RUNGE_KUTTA(double x, double y, double h, double xl)      //Метод для нахождения производной с помощью метода Рунге-Кутты 4-го порядка
+        /// <summary>
+        /// Gets the differential of function by Runge Kutta method.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <param name="h">The h.</param>
+        /// <param name="xl">The xl.</param>
+        /// <returns></returns>
+        public double GetDifferentialByRungeKutta(double x, double y, double h, double xl)      //Метод для нахождения производной с помощью метода Рунге-Кутты 4-го порядка
         {
             double k1, k2, k3, k4, d;
             int n = 1;

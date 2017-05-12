@@ -9,8 +9,8 @@ namespace MathLib
     /// </summary>
     public class Matrix
     {
-        double[,] matrixBody;
-        double[] matrixAns;
+        double[,] _matrixBody;
+        double[] _matrixAns;
 
         /// <summary>
         /// Gets the matrix koef.
@@ -22,7 +22,7 @@ namespace MathLib
         {
             get
             {
-                return matrixBody;
+                return _matrixBody;
             }
         }
 
@@ -36,7 +36,7 @@ namespace MathLib
         {
             get
             {
-                return matrixAns;
+                return _matrixAns;
             }
         }
 
@@ -78,7 +78,7 @@ namespace MathLib
         {
             get
             {
-                return matrixBody.GetLength(0);
+                return _matrixBody.GetLength(0);
             }
         }
 
@@ -92,7 +92,7 @@ namespace MathLib
         {
             get
             {
-                return matrixBody.GetLength(1);
+                return _matrixBody.GetLength(1);
             }
         }
 
@@ -196,11 +196,11 @@ namespace MathLib
         {
             get
             {
-                return matrixBody[row, column];
+                return _matrixBody[row, column];
             }
             set
             {
-                matrixBody[row, column] = value;
+                _matrixBody[row, column] = value;
             }
         }
 
@@ -214,8 +214,8 @@ namespace MathLib
         /// <param name="size">The size of the square matrix.</param>
         public Matrix(int size)
         {
-            this.matrixBody = new double[size, size];
-            this.matrixAns = new double[size];
+            this._matrixBody = new double[size, size];
+            this._matrixAns = new double[size];
         }
 
         /// <summary>
@@ -225,8 +225,8 @@ namespace MathLib
         /// <param name="columns">The columns count.</param>
         public Matrix(int rows, int columns)
         {
-            this.matrixBody = new double[rows, columns];
-            this.matrixAns = new double[rows];
+            this._matrixBody = new double[rows, columns];
+            this._matrixAns = new double[rows];
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace MathLib
         /// <param name="mBody">The matrix body (koef).</param>
         public Matrix(double[,] mBody)
         {
-            this.matrixBody = (double[,])mBody.Clone();
+            this._matrixBody = (double[,])mBody.Clone();
         }
 
         /// <summary>
@@ -245,8 +245,8 @@ namespace MathLib
         /// <param name="mAns">The result vector.</param>
         public Matrix(double[,] mBody, IEnumerable<double> mAns)
         {
-            this.matrixBody = (double[,])mBody.Clone();
-            this.matrixAns = mAns.ToArray();
+            this._matrixBody = (double[,])mBody.Clone();
+            this._matrixAns = mAns.ToArray();
         }
 
         /// <summary>
@@ -257,13 +257,13 @@ namespace MathLib
         public Matrix(IEnumerable<Vector> vBody, Vector vAns)
         {
             int size = vBody.Count();
-            this.matrixBody = new double[size, size];
+            this._matrixBody = new double[size, size];
 
             for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
                     this[j, i] = vBody.ElementAt(i).Body[j];
 
-            this.matrixAns = vAns.Body.ToArray();
+            this._matrixAns = vAns.Body.ToArray();
         }
 
         /// <summary>
@@ -283,9 +283,9 @@ namespace MathLib
         /// <param name="m">The object of the <see cref="Matrix"/> class.</param>
         public Matrix(Matrix m)
         {
-            this.matrixBody = (double[,])m.matrixBody.Clone();
+            this._matrixBody = (double[,])m._matrixBody.Clone();
             if(m.MatrixAns != null)
-                this.matrixAns = (double[])m.matrixAns.Clone();          
+                this._matrixAns = (double[])m._matrixAns.Clone();          
         }
 
         /////////////////////////////////////////////////////////////
@@ -482,9 +482,9 @@ namespace MathLib
         /// <returns></returns>
         public Matrix GetTriangleMatrix()
         {
-            Matrix m = new Matrix(this.matrixBody, this.matrixAns);
-            double[,] a = m.matrixBody;
-            double[] x = m.matrixAns;
+            Matrix m = new Matrix(this._matrixBody, this._matrixAns);
+            double[,] a = m._matrixBody;
+            double[] x = m._matrixAns;
             double h;
 
             for (int k = 0; k < m.CountColumns; k++)
@@ -522,8 +522,8 @@ namespace MathLib
         public IEnumerable<double> GetArgsByGauss()
         {
             Matrix m = GetTriangleMatrix();
-            double[,] a = m.matrixBody;
-            double[] x = m.matrixAns;
+            double[,] a = m._matrixBody;
+            double[] x = m._matrixAns;
             int n = CountRows;
 
             for (int i = n - 1; i >= 0; i--)
@@ -569,7 +569,7 @@ namespace MathLib
                     else
                         x1[j] = 0;
                 }
-                Matrix m = new Matrix(this.matrixBody, x1);
+                Matrix m = new Matrix(this._matrixBody, x1);
 
                 double[] x = m.GetArgsByGauss().ToArray();
                 for (int j = 0; j < n; j++)
@@ -618,7 +618,7 @@ namespace MathLib
         public double GetDeterminantByGauss()
         {
             Matrix m = GetTriangleMatrix();
-            double[,] a = m.matrixBody;
+            double[,] a = m._matrixBody;
             int n = CountRows;
             double val = 1;
             for (int i = 0; i < n; i++)
@@ -678,7 +678,7 @@ namespace MathLib
         {
             double[] p = GetCharactPolynom().Select(e => e*(-1)).ToArray();
             Function f = new Function(p);
-            return f.FindRoots_CHORD(eps:0.00001, steps:1000).ToArray();
+            return f.GetArgsByChord(eps:0.00001, steps:1000).ToArray();
         }
 
         /// <summary>
