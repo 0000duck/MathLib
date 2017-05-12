@@ -1,7 +1,7 @@
 # MathLib
 .NET math library for working with matrices, functions.
 
-In the class Matrix.cs implemented functionality:
+## In the class Matrix.cs implemented functionality:
   1. All matrix arithmetic operations;
   2. Get trace of matrix;
   3. Get identity matrix;
@@ -13,18 +13,18 @@ In the class Matrix.cs implemented functionality:
   9. Get eigen values, vectors of matrix;
   10. Get characteristic polynom of matrix (by Leverrier, Leverrier-Faddeev, Danilevskiy, Krylov methods);
   
-In the class Function.cs implemented functionality:
+## In the class Function.cs implemented functionality:
   1. Get roots (by Chords, Dichotomy, Golden-Section, Phibonacci methods);
   2. Get integral (by Rectangle, Trapeze, Simpsons methods);
   3. Get differential (by Runge-Kutta method);
 
-Benefits:
+## Benefits:
   - The ability to perform basic arithmetic operations with matrices with the help of operators;
   - The ability to create function object from usual function string like (x^4 + sin(x) + x^(x+2)) or with delegates. 
   - Rich functionality of classes.
   
-Examples:
-  1. Matrix operations:
+## Examples:
+###  1. Matrix operations:
   ```cs
   Matrix m1 = new Matrix(new double[,]{
       {1, 2},
@@ -49,7 +49,7 @@ Examples:
   
   ```
   
-  2. Functions
+  ### 2. Function operations:
   ```cs
   //create by delegate
   Function f1 = new Function(delegate(double x){ return x*x; });
