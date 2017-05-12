@@ -848,43 +848,5 @@ namespace MathLib
 
             return new Matrix(m);
         }
-
-        /////////////////////////////////////////////////////////////
-        ///////////***Methods for HTML-reports generating***/////////
-        /////////////////////////////////////////////////////////////
-        /*public Matrix GetTriangleMatrix_HtmlReport(string reportName = "report.html", bool IsGenerate = true)   //метод приведения матрицы к треугольному виду
-        {
-            HtmlReportCreator rep = new HtmlReportCreator(reportName);
-            Matrix m = new Matrix(this.matrixBody, this.matrixAns);
-            double[,] a = m.matrixBody;
-            double[] x = m.matrixAns;
-            double h;
-
-            rep.WriteLine("Исходная матрица:");
-            rep.WriteMatrix(new Matrix(m));
-
-            for (int k = 0; k < m.Columns; k++)
-            {
-                for (int i = k + 1; i < m.Rows; i++)
-                {
-                    h = a[i, k] / a[k, k];
-                    for (int j = 0; j < m.Columns; j++)
-                    {
-                        a[i, j] -= h * a[k, j];
-                    }
-
-                    x[i] -= h * x[k];
-                    
-                    rep.WriteLine("Шаг " + i + ": ( a" + (i + 1) + " = a" + (i + 1) + " - a" + i + ")");
-                    rep.WriteMatrix(new Matrix(m));
-                }
-            }
-
-            if(IsGenerate)
-                rep.GenerateReport();
-
-            return m;
-        }*/
-
     }
 }

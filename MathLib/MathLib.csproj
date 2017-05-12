@@ -44,8 +44,6 @@
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="FuncStrParsing.cs" />
     <Compile Include="Function.cs" />
-    <Compile Include="HtmlReport.cs" />
-    <Compile Include="HtmlReportCreator.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Report.cs" />
