@@ -167,7 +167,7 @@ namespace MathLib
         /// <param name="x2">The right limit.</param>
         /// <param name="eps">The eps.</param>
         /// <returns></returns>
-        public double GetArgByChord(double x1, double x2, double eps)
+        public double GetRootByChord(double x1, double x2, double eps)
         {
             while (Math.Abs(x2 - x1) > eps)
             {
@@ -184,7 +184,7 @@ namespace MathLib
         /// <param name="x2">The right limit.</param>
         /// <param name="eps">The eps.</param>
         /// <returns></returns>
-        public double GetArgByDichotomy(double x1, double x2, double eps)
+        public double GetRootByDichotomy(double x1, double x2, double eps)
         {
             double x;
             do {
@@ -205,7 +205,7 @@ namespace MathLib
         /// <param name="eps">The eps.</param>
         /// <param name="steps">The steps count.</param>
         /// <returns></returns>
-        public List<double> GetArgsByChord(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
+        public IEnumerable<double> GetRootsByChord(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
         {
             List<double> roots = new List<double>();
             double step = (x2 - x1) / steps;
@@ -213,7 +213,7 @@ namespace MathLib
             x2 = x1 + step;
             for (int i = 1; i <= steps; i++, x1+=step, x2+=step)
             {
-                val = GetArgByChord(x1, x2, eps);
+                val = GetRootByChord(x1, x2, eps);
                 if (F(x1)*F(x2) < 0)
                 {
                     roots.Add(val);
@@ -230,7 +230,7 @@ namespace MathLib
         /// <param name="eps">The eps.</param>
         /// <param name="steps">The steps count.</param>
         /// <returns></returns>
-        public List<double> GetArgsByDichotomy(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
+        public IEnumerable<double> GetRootsByDichotomy(double x1 = -100, double x2 = 100, double eps = 0.0001, int steps = 200)
         {
             List<double> roots = new List<double>();
             double step = (x2 - x1) / steps;
@@ -238,7 +238,7 @@ namespace MathLib
             x2 = x1 + step;
             for (int i = 1; i <= steps; i++, x1 += step, x2 += step)
             {
-                val = GetArgByDichotomy(x1, x2, eps);
+                val = GetRootByDichotomy(x1, x2, eps);
                 if (F(x1) * F(x2) < 0)
                 {
                     roots.Add(val);
@@ -254,7 +254,7 @@ namespace MathLib
         /// <param name="x2">The right limit.</param>
         /// <param name="eps">The eps.</param>
         /// <returns></returns>
-        public double GetArgByGoldenSection(double x1, double x2, double eps)
+        public double GetRootByGoldenSection(double x1, double x2, double eps)
         {
             double a, b;
             int n = 0;
@@ -289,7 +289,7 @@ namespace MathLib
         /// <param name="x2">The right limit.</param>
         /// <param name="eps">The eps.</param>
         /// <returns></returns>
-        public double GetArgByPhibonacci(double x1, double x2, double eps)
+        public double GetRootByPhibonacci(double x1, double x2, double eps)
         {
             int n = Convert.ToInt32((x2 - x1) / eps);
             double a, b, y1, y2;

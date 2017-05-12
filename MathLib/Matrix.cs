@@ -678,7 +678,7 @@ namespace MathLib
         {
             double[] p = GetCharactPolynom().Select(e => e*(-1)).ToArray();
             Function f = new Function(p);
-            return f.GetArgsByChord(eps:0.00001, steps:1000).ToArray();
+            return f.GetRootsByChord(eps:0.00001, steps:1000).ToArray();
         }
 
         /// <summary>
