@@ -5,7 +5,7 @@ using System.Linq;
 namespace MathLib
 {
     /// <summary>
-    /// Provides methods for mathematical operations with matrices
+    /// Represent mathematical matrix and methods to work with it
     /// </summary>
     public class Matrix
     {
@@ -97,7 +97,7 @@ namespace MathLib
         }
 
         /////////////////////////////////////////////////////////////
-        ///////////////////***Operator implementing***///////////////
+        ///////////////////***Operators implementing***///////////////
         /////////////////////////////////////////////////////////////
 
 
@@ -180,6 +180,31 @@ namespace MathLib
         }
 
         /////////////////////////////////////////////////////////////
+        ///////////////////***Indexers implementing***///////////////
+        /////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Gets or sets the <see cref="System.Double"/> with the specified i.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Double"/>.
+        /// </value>
+        /// <param name="row">The matrix row.</param>
+        /// <param name="column">The matrix column.</param>
+        /// <returns></returns>
+        public double this[int row, int column]
+        {
+            get
+            {
+                return matrixBody[row, column];
+            }
+            set
+            {
+                matrixBody[row, column] = value;
+            }
+        }
+
+        /////////////////////////////////////////////////////////////
         /////////////////////***Constructors***//////////////////////
         /////////////////////////////////////////////////////////////
 
@@ -236,9 +261,9 @@ namespace MathLib
 
             for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
-                    this.matrixBody[j, i] = vBody.ElementAt(i).Body[j];
+                    this[j, i] = vBody.ElementAt(i).Body[j];
 
-            this.matrixAns = vAns.Body;
+            this.matrixAns = vAns.Body.ToArray();
         }
 
         /// <summary>
@@ -249,7 +274,7 @@ namespace MathLib
         {
             for (int i = 0; i < vBody.Count(); i++)
                 for (int j = 0; j < vBody.Count(); j++)
-                    this.matrixBody[j, i] = vBody.ElementAt(i).Body[j];
+                    this[j, i] = vBody.ElementAt(i).Body[j];
         }
 
         /// <summary>
@@ -283,7 +308,7 @@ namespace MathLib
             for (int i = 0; i < m.CountRows; i++)
                 for (int j = 0; j < m.CountColumns; j++)
                 {
-                    m.matrixBody[i, j] = this.matrixBody[i, j] + matrix.matrixBody[i, j];
+                    m[i, j] = this[i, j] + matrix[i, j];
                 }
             return m;         
         }
@@ -303,7 +328,7 @@ namespace MathLib
             Matrix m = new Matrix(this.CountRows, this.CountColumns);
             for (int i = 0; i < m.CountRows; i++)
                 for (int j = 0; j < m.CountColumns; j++)
-                    m.matrixBody[i, j] = this.matrixBody[i, j] - matrix.matrixBody[i, j];
+                    m[i, j] = this[i, j] - matrix[i, j];
                     
             return m;
         }
@@ -323,7 +348,7 @@ namespace MathLib
             Vector ans = new Vector(v.Size);
             for (int i = 0; i < this.CountRows; i++)
                 for (int j = 0; j < this.CountColumns; j++)
-                    ans.Body[i] += this.MatrixBody[i, j] * v.Body[j];
+                    ans.Body[i] += this[i, j] * v.Body[j];
 
             return ans;     
         }
@@ -344,7 +369,7 @@ namespace MathLib
             for (int c = 0; c < m.CountColumns; c++)
                 for (int i = 0; i < m.CountRows; i++)
                     for (int j = 0; j < m.CountColumns; j++)                  
-                        m.matrixBody[i, c] += this.matrixBody[i, j] * matrix.matrixBody[j, c];
+                        m[i, c] += this[i, j] * matrix[j, c];
 
             return m;
         }
@@ -361,7 +386,7 @@ namespace MathLib
             Matrix m = new Matrix(this.CountRows, this.CountColumns);
             for (int i = 0; i < m.CountRows; i++)
                 for (int j = 0; j < m.CountColumns; j++)
-                    m.matrixBody[i, j] = this.matrixBody[i, j] * number;
+                    m[i, j] = this[i, j] * number;
   
             return m;
         }
@@ -379,13 +404,10 @@ namespace MathLib
             for (int i = 0; i < m.CountRows; i++)
             {
                 for (int j = 0; j < m.CountColumns; j++)
-                {
-                    m.MatrixBody[i, j] = Math.Round(m.MatrixBody[i, j], decimals);
-                }
+                    m[i, j] = Math.Round(m[i, j], decimals);
+     
                 if(m.MatrixAns != null)
-                {
                     m.MatrixAns[i] = Math.Round(m.MatrixAns[i], decimals);
-                }
             }
             return m;
         }
@@ -401,7 +423,7 @@ namespace MathLib
             double val = 0;
             for(int i = 0; i < CountRows; i++)
             {
-                val += this.MatrixBody[i, i];
+                val += this[i, i];
             }
             return val;
         }
@@ -414,7 +436,7 @@ namespace MathLib
         public void SetRow(int index, IEnumerable<double> arr)
         {
             for (int i = 0; i < CountColumns; i++)
-                MatrixBody[index, i] = arr.ElementAt(i);
+                this[index, i] = arr.ElementAt(i);
         }
 
         /// <summary>
@@ -428,7 +450,7 @@ namespace MathLib
         {
             double[] ans = new double[CountColumns];
             for (int i = 0; i < CountColumns; i++)
-                ans[i] = MatrixBody[index, i];
+                ans[i] = this[index, i];
 
             return new Vector(ans);
         }
@@ -447,7 +469,7 @@ namespace MathLib
             {
                 for (int j = 0; j < CountColumns; j++)
                 {
-                    ans[j] = MatrixBody[j, i];
+                    ans[j] = this[j, i];
                 }
                 vectors[i] = new Vector(ans);
             }
@@ -578,13 +600,13 @@ namespace MathLib
         {
             if (CountRows == 2 && CountColumns == 2)
             {
-                return matrixBody[0, 0] * matrixBody[1, 1] - matrixBody[0, 1] * matrixBody[1, 0];
+                return this[0, 0] * this[1, 1] - this[0, 1] * this[1, 0];
             }
             else
             {
                 double det = 0;
                 for (int i = 0; i < CountColumns; i++)
-                    det += matrixBody[0, i] * Math.Pow(-1, i + 2) * new Matrix(GetMinor(0, i)).GetDeterminantByDecomposition();
+                    det += this[0, i] * Math.Pow(-1, i + 2) * new Matrix(GetMinor(0, i)).GetDeterminantByDecomposition();
                 return det;
             }
         }
@@ -636,7 +658,7 @@ namespace MathLib
                     {
                         if (j != mColumn)
                         {
-                            minor[I, J] = matrixBody[i, j];
+                            minor[I, J] = this[i, j];
                             J++;
                         }
                     }
@@ -765,11 +787,11 @@ namespace MathLib
             for (int i = CountRows - 2; i >= 0; i--)
             {
                 m = Matrix.GetIdentityMatrix(CountRows);
-                m.MatrixBody[i, i] = 1 / a.MatrixBody[i + 1, i];
+                m[i, i] = 1 / a[i + 1, i];
                 for (int j = 0; j < CountRows; j++)
                 {
                     if (i != j)
-                        m.MatrixBody[i, j] = -a.MatrixBody[i + 1, j] / a.MatrixBody[i + 1, i];
+                        m[i, j] = -a[i + 1, j] / a[i + 1, i];
                 }
                 mInv = Matrix.GetIdentityMatrix(CountRows);
                 mInv.SetRow(i, a.GetRow(i + 1).Body);
@@ -778,8 +800,8 @@ namespace MathLib
             }
             coefs.Body[0] = -1;
 
-            for (int i = 1; i < coefs.Body.Length; i++)
-                coefs.Body[i] = a.MatrixBody[0, i - 1];
+            for (int i = 1; i < coefs.Size; i++)
+                coefs.Body[i] = a[0, i - 1];
 
             return coefs.Body;
         }
